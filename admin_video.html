@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Admin VSL — 50 Orações</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0A0A12;color:#E8E0D8;font-family:'Inter',sans-serif;font-size:14px;min-height:100vh}
+.sidebar{position:fixed;left:0;top:0;bottom:0;width:220px;background:#0F0F1A;border-right:1px solid rgba(255,255,255,.06);padding:24px 0;display:flex;flex-direction:column;z-index:100}
+.s-logo{padding:0 20px 24px;border-bottom:1px solid rgba(255,255,255,.06);margin-bottom:16px}
+.s-logo-txt{font-size:16px;font-weight:800;color:#fff}
+.s-logo-txt span{color:#C47A0A}
+.s-logo-sub{font-size:11px;color:#444;margin-top:2px}
+.s-nav a{display:flex;align-items:center;gap:10px;padding:10px 20px;color:#666;text-decoration:none;font-size:13px;font-weight:500;transition:.15s;border-left:2px solid transparent}
+.s-nav a:hover{color:#E8E0D8;background:rgba(255,255,255,.03)}
+.s-nav a.active{color:#C47A0A;border-left-color:#C47A0A;background:rgba(196,122,10,.06)}
+.s-nav .ico{font-size:16px;width:20px;text-align:center}
+.main{margin-left:220px;padding:28px;min-height:100vh}
+.page{display:none}.page.active{display:block}
+.page-tit{font-size:20px;font-weight:800;color:#fff;margin-bottom:4px}
+.page-sub{font-size:13px;color:#555;margin-bottom:24px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:24px}
+.card{background:#13131E;border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:18px}
+.card-n{font-size:28px;font-weight:800;color:#fff;line-height:1}
+.card-l{font-size:11px;color:#555;margin-top:6px;text-transform:uppercase;letter-spacing:1px}
+.card.gold .card-n{color:#C47A0A}
+.card.green .card-n{color:#4ade80}
+.card.red .card-n{color:#f87171}
+.sec{background:#13131E;border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:20px;margin-bottom:16px}
+.sec-tit{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#555;margin-bottom:16px}
+.daily-chart{height:140px;display:flex;align-items:flex-end;gap:8px}
+.day-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px}
+.day-bar{width:100%;border-radius:4px 4px 0 0;background:rgba(196,122,10,.3);min-height:3px;transition:height .6s}
+.day-bar.today{background:linear-gradient(180deg,#C47A0A,#8B1A1A)}
+.day-label{font-size:9px;color:#444}
+.day-val{font-size:10px;color:#888}
+.ret-chart{display:flex;align-items:flex-end;gap:5px;height:160px}
+.ret-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px}
+.ret-bar{width:100%;border-radius:4px 4px 0 0;background:linear-gradient(180deg,#C47A0A,#8B1A1A);min-height:3px;transition:height .6s}
+.ret-pct{font-size:10px;color:#888}
+.ret-label{font-size:9px;color:#444}
+.upload-zone{border:2px dashed rgba(196,122,10,.25);border-radius:12px;padding:36px 20px;text-align:center;cursor:pointer;transition:.2s;position:relative}
+.upload-zone:hover,.upload-zone.over{border-color:rgba(196,122,10,.6);background:rgba(196,122,10,.04)}
+.upload-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.u-ico{font-size:34px;margin-bottom:8px}
+.u-txt{font-size:14px;color:#888}
+.u-txt b{color:#C47A0A}
+.u-hint{font-size:11px;color:#444;margin-top:5px}
+.prog-wrap{margin-top:12px;display:none}
+.prog-bar{height:4px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,#8B1A1A,#C47A0A);width:0%;transition:width .2s}
+.prog-txt{font-size:12px;color:#555;margin-top:5px;text-align:center}
+video.prev-vid{width:100%;border-radius:8px;margin-top:12px;display:none;max-height:200px;background:#000}
+.or{text-align:center;color:#333;font-size:12px;margin:16px 0;position:relative}
+.or::before,.or::after{content:'';position:absolute;top:50%;width:44%;height:1px;background:rgba(255,255,255,.05)}
+.or::before{left:0}.or::after{right:0}
+.inp{width:100%;background:#0A0A12;border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:11px 14px;color:#E8E0D8;font-size:14px;outline:none;transition:.2s}
+.inp:focus{border-color:rgba(196,122,10,.4)}
+.inp::placeholder{color:#333}
+.btn-save{width:100%;margin-top:12px;padding:13px;background:linear-gradient(135deg,#8B1A1A,#C47A0A);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;letter-spacing:.3px}
+.btn-save:hover{opacity:.9}
+.btn-clr{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);color:#f87171;font-size:12px;padding:7px 14px;border-radius:6px;cursor:pointer}
+.st{font-size:13px;margin-top:10px;text-align:center;min-height:18px}
+.st.ok{color:#4ade80}.st.err{color:#f87171}
+.cur-src{background:rgba(196,122,10,.07);border:1px solid rgba(196,122,10,.15);border-radius:8px;padding:11px;font-size:12px;color:#888;word-break:break-all;margin-bottom:14px}
+.cur-src strong{color:#C47A0A;display:block;margin-bottom:3px;font-size:10px;text-transform:uppercase;letter-spacing:1px}
+.log-row{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.log-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.log-ev{flex:1;font-size:12px;color:#ccc;font-weight:500}
+.log-t{font-size:11px;color:#444}
+.empty{color:#444;font-size:13px;text-align:center;padding:24px 0}
+@media(max-width:700px){.sidebar{display:none}.main{margin-left:0}}
+</style>
+</head>
+<body>
+<div class="sidebar">
+  <div class="s-logo">
+    <div class="s-logo-txt">✝ <span>50 Orações</span></div>
+    <div class="s-logo-sub">Admin VSL</div>
+  </div>
+  <nav class="s-nav">
+    <a href="#" class="active" onclick="return nav('analytics',this)"><span class="ico">📊</span> Dashboard</a>
+    <a href="#" onclick="return nav('retention',this)"><span class="ico">📈</span> Retenção</a>
+    <a href="#" onclick="return nav('video',this)"><span class="ico">🎬</span> Vídeo</a>
+    <a href="#" onclick="return nav('logs',this)"><span class="ico">📋</span> Logs</a>
+    <a href="index.html" style="margin-top:auto"><span class="ico">←</span> Ver Site</a>
+  </nav>
+</div>
+
+<div class="main">
+
+  <div class="page active" id="pg-analytics">
+    <div class="page-tit">Dashboard</div>
+    <div class="page-sub">Métricas do vídeo VSL</div>
+    <div class="cards" id="kpi-cards"></div>
+    <div class="sec">
+      <div class="sec-tit">Plays por dia — últimos 7 dias</div>
+      <div class="daily-chart" id="daily-chart"></div>
+    </div>
+  </div>
+
+  <div class="page" id="pg-retention">
+    <div class="page-tit">Retenção do Vídeo</div>
+    <div class="page-sub">% de viewers que chegaram em cada parte</div>
+    <div class="sec">
+      <div class="sec-tit">Curva de retenção</div>
+      <div class="ret-chart" id="ret-chart"></div>
+    </div>
+    <div class="sec">
+      <div class="sec-tit">Análise automática</div>
+      <div id="ret-txt" style="font-size:13px;color:#888;line-height:2"></div>
+    </div>
+  </div>
+
+  <div class="page" id="pg-video">
+    <div class="page-tit">Gerenciar Vídeo</div>
+    <div class="page-sub">Troque o vídeo da landing page sem editar código</div>
+    <div class="sec">
+      <div id="cur-block" style="display:none;margin-bottom:14px">
+        <div class="sec-tit">Vídeo atual</div>
+        <div class="cur-src"><strong>Fonte</strong><span id="cur-txt"></span></div>
+      </div>
+      <div class="sec-tit">Upload do arquivo</div>
+      <div class="upload-zone" id="uz">
+        <input type="file" id="fin" accept="video/*">
+        <div class="u-ico">🎬</div>
+        <div class="u-txt">Clique ou arraste o <b>vídeo MP4</b></div>
+        <div class="u-hint">MP4 recomendado · qualquer tamanho</div>
+      </div>
+      <div class="prog-wrap" id="pw">
+        <div class="prog-bar"><div class="prog-fill" id="pf"></div></div>
+        <div class="prog-txt" id="pt">Carregando...</div>
+      </div>
+      <video class="prev-vid" id="pv" controls playsinline></video>
+      <div class="or">ou cole um link</div>
+      <input type="url" class="inp" id="url-in" placeholder="https://... link direto do MP4">
+      <button class="btn-save" onclick="salvar()">✝ Salvar e Aplicar na LP</button>
+      <div class="st" id="vst"></div>
+    </div>
+  </div>
+
+  <div class="page" id="pg-logs">
+    <div class="page-tit">Log de Eventos</div>
+    <div class="page-sub">Últimas interações com o vídeo</div>
+    <div class="sec">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <div class="sec-tit" style="margin:0">Eventos recentes</div>
+        <button class="btn-clr" onclick="limpar()">🗑 Limpar</button>
+      </div>
+      <div id="log-list"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+var AK='50oracoes_vsl_v1';
+var blob=null;
+
+function D(){try{return JSON.parse(localStorage.getItem(AK)||'{"plays":0,"completions":0,"totalTime":0,"sessions":[],"retention":{},"daily":{}}')}catch(e){return{plays:0,completions:0,totalTime:0,sessions:[],retention:{},daily:{}}}}
+
+function nav(pg,el){
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active')});
+  document.querySelectorAll('.s-nav a').forEach(function(a){a.classList.remove('active')});
+  document.getElementById('pg-'+pg).classList.add('active');
+  el.classList.add('active');
+  if(pg==='analytics')rA();
+  if(pg==='retention')rR();
+  if(pg==='logs')rL();
+  if(pg==='video')rV();
+  return false;
+}
+
+function card(cls,n,l){return '<div class="card '+cls+'"><div class="card-n">'+n+'</div><div class="card-l">'+l+'</div></div>'}
+
+function rA(){
+  var d=D();
+  var plays=d.plays||0, comps=d.completions||0, tt=d.totalTime||0;
+  var uids={};(d.sessions||[]).forEach(function(s){uids[s.sid]=true});
+  var uniq=Object.keys(uids).length;
+  var avg=plays>0?Math.round(tt/plays/60*10)/10:0;
+  var cr=plays>0?Math.round(comps/plays*100):0;
+  document.getElementById('kpi-cards').innerHTML=
+    card('gold',plays,'Total plays')+
+    card('',uniq,'Sessões únicas')+
+    card('green',cr+'%','Taxa conclusão')+
+    card('',avg+'min','Tempo médio')+
+    card('',comps,'Completaram')+
+    card('red',plays-comps,'Abandonaram');
+
+  var daily=d.daily||{};
+  var days=[];
+  for(var i=6;i>=0;i--){
+    var dt=new Date(Date.now()-i*86400000);
+    var k=dt.toISOString().slice(0,10);
+    days.push({k:k,l:dt.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'}),v:daily[k]||0});
+  }
+  var mx=Math.max.apply(null,days.map(function(d){return d.v}))||1;
+  var today=new Date().toISOString().slice(0,10);
+  document.getElementById('daily-chart').innerHTML=days.map(function(d){
+    var h=Math.max(Math.round(d.v/mx*120),d.v>0?4:2);
+    return '<div class="day-col"><div class="day-val">'+(d.v||'')+'</div><div class="day-bar'+(d.k===today?' today':'') +'" style="height:'+h+'px"></div><div class="day-label">'+d.l+'</div></div>';
+  }).join('');
+}
+
+function rR(){
+  var d=D();
+  var ret=d.retention||{};
+  var plays=d.plays||1;
+  var pts=[10,20,30,40,50,60,70,80,90,100];
+  var mx=Math.max.apply(null,pts.map(function(p){return ret[p]||0}))||1;
+  document.getElementById('ret-chart').innerHTML=pts.map(function(p){
+    var v=ret[p]||0;
+    var pct=Math.round(v/plays*100);
+    var h=Math.max(Math.round(pct/100*140),2);
+    return '<div class="ret-col"><div class="ret-pct">'+(v>0?pct+'%':'')+'</div><div class="ret-bar" style="height:'+h+'px"></div><div class="ret-label">'+p+'%</div></div>';
+  }).join('');
+
+  var drops=[];
+  for(var i=1;i<pts.length;i++){
+    var prev=ret[pts[i-1]]||0, curr=ret[pts[i]]||0;
+    if(prev>0&&Math.round((prev-curr)/prev*100)>=30)
+      drops.push('⚠️ Queda de '+Math.round((prev-curr)/prev*100)+'% entre '+pts[i-1]+'% e '+pts[i]+'%');
+  }
+  var p50=ret[50]?Math.round(ret[50]/plays*100):0;
+  var p90=ret[90]?Math.round(ret[90]/plays*100):0;
+  document.getElementById('ret-txt').innerHTML=
+    '📌 <b>'+p50+'%</b> dos viewers chegaram até a metade<br>'+
+    '🎯 <b>'+p90+'%</b> chegaram até 90% do vídeo<br>'+
+    (drops.length?'<br>'+drops.join('<br>'):(plays>1?'<br>✅ Sem quedas bruscas':'<br><i>Ainda sem dados</i>'));
+}
+
+function rL(){
+  var d=D();
+  var ss=(d.sessions||[]).slice(-50).reverse();
+  var el={play:'▶ Play',complete:'✅ Completou',pause:'⏸ Pausou',watchtime:'⏱ Tempo assistido',pct:'📍 Progresso'};
+  var dc={play:'#C47A0A',complete:'#4ade80',pause:'#666',watchtime:'#555',pct:'#8B1A1A'};
+  if(!ss.length){document.getElementById('log-list').innerHTML='<div class="empty">Nenhum evento ainda.</div>';return}
+  document.getElementById('log-list').innerHTML=ss.map(function(s){
+    var dt=new Date(s.ts);
+    var t=dt.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+    var dd=dt.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});
+    var lbl=s.ev==='pct'?'📍 Assistiu '+s.val+'% do vídeo':s.ev==='watchtime'?'⏱ Assistiu '+s.val+'s':(el[s.ev]||s.ev);
+    return '<div class="log-row"><div class="log-dot" style="background:'+(dc[s.ev]||'#666')+'"></div><div class="log-ev">'+lbl+'</div><div class="log-t">'+dd+' '+t+' · <span style="color:#333">...'+s.sid.slice(-5)+'</span></div></div>';
+  }).join('');
+}
+
+function rV(){
+  var sv=localStorage.getItem('vsl_src');
+  var b=document.getElementById('cur-block');
+  if(sv){b.style.display='block';document.getElementById('cur-txt').textContent=sv.startsWith('blob:')?'Arquivo local (sessão atual)':sv}
+  else b.style.display='none';
+}
+
+document.getElementById('fin').addEventListener('change',function(e){
+  var f=e.target.files[0]; if(!f)return;
+  var pw=document.getElementById('pw'),pf=document.getElementById('pf'),pt=document.getElementById('pt'),pv=document.getElementById('pv');
+  pw.style.display='block'; var p=0;
+  var iv=setInterval(function(){pf.style.width=(p=Math.min(p+12,88))+'%'},150);
+  setTimeout(function(){
+    clearInterval(iv); pf.style.width='100%';
+    blob=URL.createObjectURL(f);
+    pv.src=blob; pv.style.display='block';
+    pt.textContent='✅ '+f.name+' ('+( f.size/1024/1024).toFixed(1)+'MB)';
+    document.getElementById('url-in').value='';
+    document.getElementById('vst').textContent='Arquivo pronto — clique em Salvar';
+    document.getElementById('vst').className='st ok';
+  },1200);
+  document.querySelector('.u-txt').innerHTML='📹 <b>'+f.name+'</b>';
+});
+
+var uz=document.getElementById('uz');
+uz.addEventListener('dragover',function(e){e.preventDefault();uz.classList.add('over')});
+uz.addEventListener('dragleave',function(){uz.classList.remove('over')});
+uz.addEventListener('drop',function(e){
+  e.preventDefault();uz.classList.remove('over');
+  var f=e.dataTransfer.files[0];
+  if(f&&f.type.startsWith('video/')){document.getElementById('fin').files=e.dataTransfer.files;document.getElementById('fin').dispatchEvent(new Event('change'))}
+});
+
+function salvar(){
+  var url=document.getElementById('url-in').value.trim();
+  var st=document.getElementById('vst');
+  var src=blob||url;
+  if(!src){st.textContent='⚠️ Selecione um arquivo ou cole uma URL';st.className='st err';return}
+  localStorage.setItem('vsl_src',src);
+  st.textContent='✅ Salvo e aplicado na LP!'; st.className='st ok';
+  rV();
+}
+
+function limpar(){
+  if(confirm('Apagar todos os dados de analytics?')){localStorage.removeItem(AK);location.reload()}
+}
+
+rA();
+</script>
+</body>
+</html>
